@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -17,6 +17,7 @@ import { ContactForm, Locale } from '../../models';
 })
 export class Contact implements OnInit, OnDestroy {
   private readonly api = inject(Api);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly i18n = inject(I18n);
   private readonly subscriptions = new Subscription();
 
@@ -31,6 +32,7 @@ export class Contact implements OnInit, OnDestroy {
       this.i18n.locale$.subscribe(() => {
         this.locale = this.i18n.locale;
         this.dictionary = this.i18n.dictionary;
+        this.syncView();
       }),
     );
   }
@@ -64,11 +66,17 @@ export class Contact implements OnInit, OnDestroy {
         this.feedback = this.dictionary.contact.success;
         this.form = { name: '', email: '', subject: '', message: '' };
         this.isSubmitting = false;
+        this.syncView();
       },
       error: () => {
         this.feedback = this.dictionary.common.submitError;
         this.isSubmitting = false;
+        this.syncView();
       },
     });
+  }
+
+  private syncView() {
+    queueMicrotask(() => this.cdr.detectChanges());
   }
 }

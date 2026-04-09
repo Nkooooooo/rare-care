@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 
@@ -16,6 +16,7 @@ import { DailyCornerEntry, EventItem, Locale } from '../../models';
 })
 export class Home implements OnInit, OnDestroy {
   private readonly api = inject(Api);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly i18n = inject(I18n);
   private readonly subscriptions = new Subscription();
 
@@ -33,6 +34,7 @@ export class Home implements OnInit, OnDestroy {
         this.locale = this.i18n.locale;
         this.dictionary = this.i18n.dictionary;
         this.loadContent();
+        this.syncView();
       }),
     );
   }
@@ -54,9 +56,19 @@ export class Home implements OnInit, OnDestroy {
   }
 
   private loadContent() {
-    this.api.getEvents(this.locale).subscribe((events) => (this.events = events.slice(0, 1)));
+    this.api.getEvents(this.locale).subscribe((events) => {
+      this.events = events.slice(0, 1);
+      this.syncView();
+    });
     this.api
       .getDailyCornerEntries(this.locale)
-      .subscribe((entries) => (this.entries = entries.slice(0, 1)));
+      .subscribe((entries) => {
+        this.entries = entries.slice(0, 1);
+        this.syncView();
+      });
+  }
+
+  private syncView() {
+    queueMicrotask(() => this.cdr.detectChanges());
   }
 }

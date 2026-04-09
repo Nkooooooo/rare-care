@@ -38,7 +38,7 @@ export class App implements OnDestroy {
   protected authError = '';
   protected searchQuery = '';
   protected loginForm: LoginForm = {
-    email: '',
+    identifier: '',
     password: '',
   };
   protected registerForm: RegisterForm & { confirmPassword: string } = {
@@ -142,6 +142,10 @@ export class App implements OnDestroy {
     return user?.profileImageUrl?.trim() || '/profile-icon.png';
   }
 
+  protected isAdmin(user: AuthUser | null = this.authUser) {
+    return user?.role === 'admin';
+  }
+
   protected toggleAuthMenu(event: MouseEvent) {
     event.stopPropagation();
     this.authMenuOpen = !this.authMenuOpen;
@@ -187,7 +191,7 @@ export class App implements OnDestroy {
       )
       .subscribe({
         next: () => {
-          this.loginForm = { email: '', password: '' };
+          this.loginForm = { identifier: '', password: '' };
           this.closeAuthModal();
         },
         error: (error) => {
@@ -250,7 +254,19 @@ export class App implements OnDestroy {
     return !!field.invalid && (field.touched || form.submitted);
   }
 
-  protected loginEmailError(field: NgModel, form: NgForm) {
+  protected loginIdentifierError(field: NgModel, form: NgForm) {
+    if (!this.isFieldInvalid(field, form)) {
+      return '';
+    }
+
+    if (field.errors?.['required']) {
+      return this.dictionary.auth.loginIdentifierRequired;
+    }
+
+    return '';
+  }
+
+  protected emailError(field: NgModel, form: NgForm) {
     if (!this.isFieldInvalid(field, form)) {
       return '';
     }

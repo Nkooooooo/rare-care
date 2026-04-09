@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, catchError, distinctUntilChanged, of, switchMap, tap } from 'rxjs';
 
 import { Dictionary, formatDisplayDate } from '../../content';
 import { Api } from '../../core/api';
@@ -19,12 +19,15 @@ import { EventItem, EventRegistrationForm, Locale } from '../../models';
 export class Events implements OnInit, OnDestroy {
   private readonly api = inject(Api);
   private readonly auth = inject(Auth);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly i18n = inject(I18n);
   private readonly subscriptions = new Subscription();
 
   locale: Locale = this.i18n.locale;
   dictionary: Dictionary = this.i18n.dictionary;
   events: EventItem[] = [];
+  isLoading = true;
+  loadError = '';
   activeEventId = '';
   registrationForm: EventRegistrationForm = this.defaultRegistrationForm();
   registrationPending = false;
@@ -32,11 +35,30 @@ export class Events implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscriptions.add(
-      this.i18n.locale$.subscribe(() => {
-        this.locale = this.i18n.locale;
-        this.dictionary = this.i18n.dictionary;
-        this.api.getEvents(this.locale).subscribe((events) => (this.events = events));
-      }),
+      this.i18n.locale$
+        .pipe(
+          distinctUntilChanged(),
+          tap((locale) => {
+            this.locale = locale;
+            this.dictionary = this.i18n.dictionary;
+            this.isLoading = true;
+            this.loadError = '';
+            this.syncView();
+          }),
+          switchMap((locale) =>
+            this.api.getEvents(locale).pipe(
+              catchError(() => {
+                this.loadError = this.dictionary.common.generalError;
+                return of([]);
+              }),
+            ),
+          ),
+        )
+        .subscribe((events) => {
+          this.events = events;
+          this.isLoading = false;
+          this.syncView();
+        }),
     );
   }
 
@@ -71,6 +93,8 @@ export class Events implements OnInit, OnDestroy {
       this.registrationForm.name = this.auth.user.name;
       this.registrationForm.email = this.auth.user.email;
     }
+
+    this.syncView();
   }
 
   closeRegistration() {
@@ -78,6 +102,7 @@ export class Events implements OnInit, OnDestroy {
     this.registrationPending = false;
     this.registrationFeedback = null;
     this.registrationForm = this.defaultRegistrationForm();
+    this.syncView();
   }
 
   isRegistrationValid() {
@@ -104,6 +129,7 @@ export class Events implements OnInit, OnDestroy {
         };
         this.registrationPending = false;
         this.registrationForm = this.defaultRegistrationForm();
+        this.syncView();
       },
       error: () => {
         this.registrationFeedback = {
@@ -111,6 +137,7 @@ export class Events implements OnInit, OnDestroy {
           message: this.dictionary.common.submitError,
         };
         this.registrationPending = false;
+        this.syncView();
       },
     });
   }
@@ -123,5 +150,9 @@ export class Events implements OnInit, OnDestroy {
       attendees: 1,
       note: '',
     };
+  }
+
+  private syncView() {
+    queueMicrotask(() => this.cdr.detectChanges());
   }
 }

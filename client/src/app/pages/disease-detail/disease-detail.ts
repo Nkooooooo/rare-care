@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 
@@ -16,6 +16,7 @@ import { Disease, Locale } from '../../models';
 })
 export class DiseaseDetail implements OnInit, OnDestroy {
   private readonly api = inject(Api);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly route = inject(ActivatedRoute);
   private readonly i18n = inject(I18n);
   private readonly subscriptions = new Subscription();
@@ -32,6 +33,7 @@ export class DiseaseDetail implements OnInit, OnDestroy {
         this.locale = this.i18n.locale;
         this.dictionary = this.i18n.dictionary;
         this.loadDisease();
+        this.syncView();
       }),
     );
 
@@ -39,6 +41,7 @@ export class DiseaseDetail implements OnInit, OnDestroy {
       this.route.paramMap.subscribe((params) => {
         this.slug = params.get('slug') || '';
         this.loadDisease();
+        this.syncView();
       }),
     );
   }
@@ -64,11 +67,17 @@ export class DiseaseDetail implements OnInit, OnDestroy {
       next: (disease) => {
         this.disease = disease;
         this.notFound = false;
+        this.syncView();
       },
       error: () => {
         this.disease = null;
         this.notFound = true;
+        this.syncView();
       },
     });
+  }
+
+  private syncView() {
+    queueMicrotask(() => this.cdr.detectChanges());
   }
 }

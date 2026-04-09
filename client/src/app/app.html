@@ -50,6 +50,20 @@
                 <a [routerLink]="route('/profile')" (click)="closeAuthMenu()">{{
                   dictionary.auth.profile
                 }}</a>
+                @if (isAdmin()) {
+                  <a [routerLink]="route('/user-management')" (click)="closeAuthMenu()">{{
+                    dictionary.auth.userManagement
+                  }}</a>
+                  <a [routerLink]="route('/event-management')" (click)="closeAuthMenu()">{{
+                    dictionary.auth.eventManagement
+                  }}</a>
+                  <a [routerLink]="route('/daily-corner-management')" (click)="closeAuthMenu()">{{
+                    dictionary.auth.dailyCornerManagement
+                  }}</a>
+                  <a [routerLink]="route('/disease-management')" (click)="closeAuthMenu()">{{
+                    dictionary.auth.diseaseManagement
+                  }}</a>
+                }
                 <button type="button" (click)="logout()">{{ dictionary.auth.logout }}</button>
               </div>
             }
@@ -132,6 +146,20 @@
               <a class="auth-user-pill" [routerLink]="route('/profile')">
                 {{ dictionary.auth.profile }}
               </a>
+              @if (isAdmin()) {
+                <a class="auth-user-pill" [routerLink]="route('/user-management')">
+                  {{ dictionary.auth.userManagement }}
+                </a>
+                <a class="auth-user-pill" [routerLink]="route('/event-management')">
+                  {{ dictionary.auth.eventManagement }}
+                </a>
+                <a class="auth-user-pill" [routerLink]="route('/daily-corner-management')">
+                  {{ dictionary.auth.dailyCornerManagement }}
+                </a>
+                <a class="auth-user-pill" [routerLink]="route('/disease-management')">
+                  {{ dictionary.auth.diseaseManagement }}
+                </a>
+              }
               <button class="auth-logout-button" type="button" (click)="logout()">
                 {{ dictionary.auth.logout }}
               </button>
@@ -186,19 +214,18 @@
             <h2 id="auth-modal-title">{{ dictionary.auth.loginTitle }}</h2>
             <p>{{ dictionary.auth.loginBody }}</p>
             <div class="field-group">
-              <label for="auth-login-email">{{ dictionary.auth.email }}</label>
+              <label for="auth-login-email">{{ dictionary.auth.loginIdentifier }}</label>
               <input
                 id="auth-login-email"
-                name="authLoginEmail"
-                type="email"
-                #loginEmail="ngModel"
-                [(ngModel)]="loginForm.email"
-                [class.is-invalid]="isFieldInvalid(loginEmail, loginNgForm)"
+                name="authLoginIdentifier"
+                type="text"
+                #loginIdentifier="ngModel"
+                [(ngModel)]="loginForm.identifier"
+                [class.is-invalid]="isFieldInvalid(loginIdentifier, loginNgForm)"
                 required
-                email
               />
-              @if (loginEmailError(loginEmail, loginNgForm)) {
-                <p class="field-error">{{ loginEmailError(loginEmail, loginNgForm) }}</p>
+              @if (loginIdentifierError(loginIdentifier, loginNgForm)) {
+                <p class="field-error">{{ loginIdentifierError(loginIdentifier, loginNgForm) }}</p>
               }
             </div>
             <div class="field-group">
@@ -256,8 +283,8 @@
                 required
                 email
               />
-              @if (loginEmailError(registerEmail, registerNgForm)) {
-                <p class="field-error">{{ loginEmailError(registerEmail, registerNgForm) }}</p>
+              @if (emailError(registerEmail, registerNgForm)) {
+                <p class="field-error">{{ emailError(registerEmail, registerNgForm) }}</p>
               }
             </div>
             <div class="field-group">

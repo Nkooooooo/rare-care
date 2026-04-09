@@ -8,137 +8,145 @@
   <section class="page-hero">
     <div class="container page-hero-inner">
       <div class="page-hero-copy">
-        <p class="eyebrow">{{ dictionary.nav.events }}</p>
         <h1>{{ dictionary.events.title }}</h1>
         <p>{{ dictionary.events.body }}</p>
-      </div>
-      <div class="hero-figure">
-        <div class="hero-orbit"></div>
-        <div class="hero-person"></div>
-        <div class="hero-dome"></div>
       </div>
     </div>
   </section>
   <section class="container section event-list">
-    @for (event of events; track event.id) {
-      <article class="event-card tone-{{ event.image || 'forum' }}">
-        <div class="event-poster" aria-hidden="true">
-          <span>{{
-            event.image === 'fundraiser' ? dictionary.nav.donate : dictionary.siteName
-          }}</span>
-        </div>
-        <div class="event-content">
-          <h3>{{ event.title }}</h3>
-          <p>{{ event.summary }}</p>
-          @if (event.description) {
-            <p>{{ event.description }}</p>
-          }
-          <dl class="event-meta">
-            <div>
-              <dt>📅</dt>
-              <dd>
-                {{ formatDate(event.date) }}{{ event.startTime ? ' · ' + event.startTime : ''
-                }}{{ event.endTime ? '-' + event.endTime : '' }}
-              </dd>
-            </div>
-            @if (event.organizer) {
-              <div>
-                <dt>👥</dt>
-                <dd>{{ dictionary.events.organizer }}: {{ event.organizer }}</dd>
-              </div>
+    @if (isLoading) {
+      <div class="content-panel empty-state">
+        <p>{{ dictionary.common.sending }}</p>
+      </div>
+    } @else if (loadError) {
+      <div class="content-panel empty-state">
+        <p>{{ loadError }}</p>
+      </div>
+    } @else if (!events.length) {
+      <div class="content-panel empty-state">
+        <p>{{ dictionary.common.noResults }}</p>
+      </div>
+    } @else {
+      @for (event of events; track event.id) {
+        <article class="event-card tone-{{ event.image || 'forum' }}">
+          <div class="event-poster" aria-hidden="true">
+            <span>{{
+              event.image === 'fundraiser' ? dictionary.nav.donate : dictionary.siteName
+            }}</span>
+          </div>
+          <div class="event-content">
+            <h3>{{ event.title }}</h3>
+            <p>{{ event.summary }}</p>
+            @if (event.description) {
+              <p>{{ event.description }}</p>
             }
-            @if (event.location) {
+            <dl class="event-meta">
               <div>
-                <dt>⌖</dt>
-                <dd>{{ dictionary.events.location }}: {{ event.location }}</dd>
+                <dt>📅</dt>
+                <dd>
+                  {{ formatDate(event.date) }}{{ event.startTime ? ' · ' + event.startTime : ''
+                  }}{{ event.endTime ? '-' + event.endTime : '' }}
+                </dd>
               </div>
-            }
-          </dl>
-          <button
-            class="secondary-button event-register-trigger"
-            type="button"
-            (click)="toggleRegistration(event)"
-          >
-            {{ isRegistering(event.id) ? dictionary.auth.close : dictionary.events.register }}
-          </button>
-
-          @if (isRegistering(event.id)) {
-            <form class="event-registration-form" (ngSubmit)="submitRegistration(event.id)">
-              <p class="event-registration-intro">{{ dictionary.events.registrationIntro }}</p>
-              <div class="two-column-grid">
+              @if (event.organizer) {
                 <div class="field-group">
-                  <label [for]="'event-name-' + event.id">{{ dictionary.events.name }}</label>
-                  <input
-                    [id]="'event-name-' + event.id"
-                    name="eventRegistrationName"
-                    [(ngModel)]="registrationForm.name"
-                  />
-                </div>
-                <div class="field-group">
-                  <label [for]="'event-email-' + event.id">{{ dictionary.events.email }}</label>
-                  <input
-                    [id]="'event-email-' + event.id"
-                    name="eventRegistrationEmail"
-                    type="email"
-                    [(ngModel)]="registrationForm.email"
-                  />
-                </div>
-                <div class="field-group">
-                  <label [for]="'event-phone-' + event.id">{{ dictionary.events.phone }}</label>
-                  <input
-                    [id]="'event-phone-' + event.id"
-                    name="eventRegistrationPhone"
-                    type="tel"
-                    [(ngModel)]="registrationForm.phone"
-                  />
-                </div>
-                <div class="field-group">
-                  <label [for]="'event-attendees-' + event.id">{{
-                    dictionary.events.attendees
-                  }}</label>
-                  <input
-                    [id]="'event-attendees-' + event.id"
-                    name="eventRegistrationAttendees"
-                    type="number"
-                    min="1"
-                    [(ngModel)]="registrationForm.attendees"
-                  />
-                </div>
-                <div class="field-group full-width">
-                  <label [for]="'event-note-' + event.id">{{ dictionary.events.note }}</label>
-                  <textarea
-                    [id]="'event-note-' + event.id"
-                    name="eventRegistrationNote"
-                    rows="4"
-                    [(ngModel)]="registrationForm.note"
-                  ></textarea>
-                </div>
-              </div>
-              <div class="event-registration-actions">
-                <button
-                  class="primary-button"
-                  type="submit"
-                  [disabled]="!isRegistrationValid() || registrationPending"
-                >
-                  {{ registrationPending ? dictionary.common.sending : dictionary.common.submit }}
-                </button>
-                <button class="secondary-button" type="button" (click)="closeRegistration()">
-                  {{ dictionary.auth.close }}
-                </button>
-              </div>
-              @if (registrationFeedback) {
-                <div
-                  class="form-feedback"
-                  [class.is-success]="registrationFeedback.status === 'success'"
-                  [class.is-error]="registrationFeedback.status === 'error'"
-                >
-                  <p>{{ registrationFeedback.message }}</p>
+                  <dt>👥</dt>
+                  <dd>{{ dictionary.events.organizer }}: {{ event.organizer }}</dd>
                 </div>
               }
-            </form>
-          }
-        </div>
-      </article>
+              @if (event.location) {
+                <div class="field-group">
+                  <dt>⌖</dt>
+                  <dd>{{ dictionary.events.location }}: {{ event.location }}</dd>
+                </div>
+              }
+            </dl>
+            <button
+              class="secondary-button event-register-trigger"
+              type="button"
+              (click)="toggleRegistration(event)"
+            >
+              {{ isRegistering(event.id) ? dictionary.auth.close : dictionary.events.register }}
+            </button>
+
+            @if (isRegistering(event.id)) {
+              <form class="event-registration-form" (ngSubmit)="submitRegistration(event.id)">
+                <p class="event-registration-intro">{{ dictionary.events.registrationIntro }}</p>
+                <div class="two-column-grid">
+                  <div class="field-group">
+                    <label [for]="'event-name-' + event.id">{{ dictionary.events.name }}</label>
+                    <input
+                      [id]="'event-name-' + event.id"
+                      name="eventRegistrationName"
+                      [(ngModel)]="registrationForm.name"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <label [for]="'event-email-' + event.id">{{ dictionary.events.email }}</label>
+                    <input
+                      [id]="'event-email-' + event.id"
+                      name="eventRegistrationEmail"
+                      type="email"
+                      [(ngModel)]="registrationForm.email"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <label [for]="'event-phone-' + event.id">{{ dictionary.events.phone }}</label>
+                    <input
+                      [id]="'event-phone-' + event.id"
+                      name="eventRegistrationPhone"
+                      type="tel"
+                      [(ngModel)]="registrationForm.phone"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <label [for]="'event-attendees-' + event.id">{{
+                      dictionary.events.attendees
+                    }}</label>
+                    <input
+                      [id]="'event-attendees-' + event.id"
+                      name="eventRegistrationAttendees"
+                      type="number"
+                      min="1"
+                      [(ngModel)]="registrationForm.attendees"
+                    />
+                  </div>
+                  <div class="field-group full-width">
+                    <label [for]="'event-note-' + event.id">{{ dictionary.events.note }}</label>
+                    <textarea
+                      [id]="'event-note-' + event.id"
+                      name="eventRegistrationNote"
+                      rows="4"
+                      [(ngModel)]="registrationForm.note"
+                    ></textarea>
+                  </div>
+                </div>
+                <div class="event-registration-actions">
+                  <button
+                    class="primary-button"
+                    type="submit"
+                    [disabled]="!isRegistrationValid() || registrationPending"
+                  >
+                    {{ registrationPending ? dictionary.common.sending : dictionary.common.submit }}
+                  </button>
+                  <button class="secondary-button" type="button" (click)="closeRegistration()">
+                    {{ dictionary.auth.close }}
+                  </button>
+                </div>
+                @if (registrationFeedback) {
+                  <div
+                    class="form-feedback"
+                    [class.is-success]="registrationFeedback.status === 'success'"
+                    [class.is-error]="registrationFeedback.status === 'error'"
+                  >
+                    <p>{{ registrationFeedback.message }}</p>
+                  </div>
+                }
+              </form>
+            }
+          </div>
+        </article>
+      }
     }
   </section>
 </div>

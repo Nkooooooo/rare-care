@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -17,6 +17,7 @@ import { AuthUser, Locale, UpdateProfileForm } from '../../models';
 })
 export class Profile implements OnInit, OnDestroy {
   private readonly auth = inject(Auth);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly i18n = inject(I18n);
   private readonly subscriptions = new Subscription();
   private readonly maxImageBytes = 4 * 1024 * 1024;
@@ -35,6 +36,7 @@ export class Profile implements OnInit, OnDestroy {
       this.i18n.locale$.subscribe(() => {
         this.locale = this.i18n.locale;
         this.dictionary = this.i18n.dictionary;
+        this.syncView();
       }),
     );
 
@@ -46,6 +48,7 @@ export class Profile implements OnInit, OnDestroy {
           profileImageUrl: user?.profileImageUrl || '',
         };
         this.selectedPhotoName = '';
+        this.syncView();
       }),
     );
   }
@@ -107,11 +110,13 @@ export class Profile implements OnInit, OnDestroy {
           this.form.profileImageUrl = user.profileImageUrl || '';
           this.feedback = null;
           this.isUploadingPhoto = false;
+          this.syncView();
         },
         error: () => {
           this.form.profileImageUrl = this.user?.profileImageUrl || '';
           this.feedback = { status: 'error', message: this.dictionary.common.submitError };
           this.isUploadingPhoto = false;
+          this.syncView();
         },
       });
     };
@@ -132,11 +137,13 @@ export class Profile implements OnInit, OnDestroy {
       next: ({ user }) => {
         this.form.profileImageUrl = user.profileImageUrl || '';
         this.isUploadingPhoto = false;
+        this.syncView();
       },
       error: () => {
         this.form.profileImageUrl = this.user?.profileImageUrl || '';
         this.feedback = { status: 'error', message: this.dictionary.common.submitError };
         this.isUploadingPhoto = false;
+        this.syncView();
       },
     });
   }
@@ -157,10 +164,12 @@ export class Profile implements OnInit, OnDestroy {
         next: () => {
           this.feedback = { status: 'success', message: this.dictionary.profile.success };
           this.isSaving = false;
+          this.syncView();
         },
         error: () => {
           this.feedback = { status: 'error', message: this.dictionary.common.submitError };
           this.isSaving = false;
+          this.syncView();
         },
       });
   }
@@ -171,5 +180,9 @@ export class Profile implements OnInit, OnDestroy {
       month: 'long',
       day: 'numeric',
     }).format(new Date(value));
+  }
+
+  private syncView() {
+    queueMicrotask(() => this.cdr.detectChanges());
   }
 }

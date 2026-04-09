@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -17,6 +17,7 @@ import { Disease, Locale } from '../../models';
 })
 export class DiseaseList implements OnInit, OnDestroy {
   private readonly api = inject(Api);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly i18n = inject(I18n);
@@ -37,6 +38,7 @@ export class DiseaseList implements OnInit, OnDestroy {
         this.dictionary = this.i18n.dictionary;
         this.loadCategories();
         this.loadDiseases();
+        this.syncView();
       }),
     );
 
@@ -46,6 +48,7 @@ export class DiseaseList implements OnInit, OnDestroy {
         this.category = params.get('category') || 'all';
         this.sort = params.get('sort') || 'name';
         this.loadDiseases();
+        this.syncView();
       }),
     );
   }
@@ -75,12 +78,22 @@ export class DiseaseList implements OnInit, OnDestroy {
   private loadCategories() {
     this.api
       .getDiseaseCategories(this.locale)
-      .subscribe((categories) => (this.categories = categories));
+      .subscribe((categories) => {
+        this.categories = categories;
+        this.syncView();
+      });
   }
 
   private loadDiseases() {
     this.api
       .getDiseases(this.locale, { query: this.query, category: this.category, sort: this.sort })
-      .subscribe((diseases) => (this.diseases = diseases));
+      .subscribe((diseases) => {
+        this.diseases = diseases;
+        this.syncView();
+      });
+  }
+
+  private syncView() {
+    queueMicrotask(() => this.cdr.detectChanges());
   }
 }

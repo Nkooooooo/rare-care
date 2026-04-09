@@ -8,14 +8,8 @@
   <section class="page-hero">
     <div class="container page-hero-inner">
       <div class="page-hero-copy">
-        <p class="eyebrow">{{ dictionary.auth.profile }}</p>
         <h1>{{ dictionary.profile.title }}</h1>
         <p>{{ dictionary.profile.body }}</p>
-      </div>
-      <div class="hero-figure">
-        <div class="hero-orbit"></div>
-        <div class="hero-person"></div>
-        <div class="hero-dome"></div>
       </div>
     </div>
   </section>
@@ -27,6 +21,11 @@
           <div class="field-group">
             <label for="profile-name">{{ dictionary.auth.name }}</label>
             <input id="profile-name" name="name" [(ngModel)]="form.name" />
+          </div>
+          <div class="field-group">
+            <label for="profile-username">{{ dictionary.auth.username }}</label>
+            <input id="profile-username" [value]="user.username" readonly />
+            <p class="field-help">{{ dictionary.profile.usernameReadonly }}</p>
           </div>
           <div class="field-group">
             <label for="profile-email">{{ dictionary.auth.email }}</label>
@@ -94,6 +93,7 @@
           <div class="profile-meta content-panel is-soft">
             <h2>{{ dictionary.profile.photoPreview }}</h2>
             <p><strong>{{ user.name }}</strong></p>
+            <p>@{{ user.username }}</p>
             <p>{{ user.email }}</p>
             <p>{{ dictionary.profile.memberSince }}: {{ formatJoinedDate(user.createdAt) }}</p>
           </div>

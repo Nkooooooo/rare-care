@@ -1,0 +1,220 @@
+<div class="page-stack">
+  <div class="container section-tight">
+    <nav class="breadcrumbs">
+      <a [routerLink]="routeTo()">{{ dictionary.common.home }}</a
+      ><span class="breadcrumb-separator">/</span><span>{{ dictionary.admin.title }}</span>
+    </nav>
+  </div>
+  <section class="page-hero">
+    <div class="container page-hero-inner">
+      <div class="page-hero-copy">
+        <h1>{{ dictionary.admin.title }}</h1>
+        <p>{{ dictionary.admin.body }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container section">
+    @if (!currentUser) {
+      <div class="empty-state">
+        <h2>{{ dictionary.profile.signedOutTitle }}</h2>
+        <p>{{ dictionary.profile.signedOutBody }}</p>
+      </div>
+    } @else if (!isAdmin()) {
+      <div class="empty-state">
+        <h2>{{ dictionary.admin.accessDeniedTitle }}</h2>
+        <p>{{ dictionary.admin.accessDeniedBody }}</p>
+      </div>
+    } @else {
+      <div class="user-dashboard">
+        <div class="user-dashboard-top">
+          <div>
+            <h2>{{ dictionary.admin.listTitle }}</h2>
+            <p>{{ dictionary.admin.listBody }}</p>
+          </div>
+          <button class="primary-button" type="button" (click)="openCreateModal()">
+            {{ dictionary.admin.createButton }}
+          </button>
+        </div>
+
+        @if (dashboardFeedback) {
+          <div
+            class="form-feedback"
+            [class.is-success]="dashboardFeedback.status === 'success'"
+            [class.is-error]="dashboardFeedback.status === 'error'"
+          >
+            <p>{{ dashboardFeedback.message }}</p>
+          </div>
+        }
+
+        @if (isLoading) {
+          <div class="content-panel empty-state">
+            <p>{{ dictionary.common.sending }}</p>
+          </div>
+        } @else if (!users.length) {
+          <div class="content-panel empty-state">
+            <p>{{ dictionary.admin.noUsers }}</p>
+          </div>
+        } @else {
+          <div class="user-table">
+            <div class="user-table-head">
+              <span>{{ dictionary.auth.name }}</span>
+              <span>{{ dictionary.auth.username }}</span>
+              <span>{{ dictionary.auth.email }}</span>
+              <span>{{ dictionary.admin.role }}</span>
+              <span>{{ dictionary.profile.memberSince }}</span>
+              <span>{{ dictionary.common.learnMore }}</span>
+            </div>
+            <div class="user-table-body">
+              @for (user of users; track user.id) {
+                <button class="user-row" type="button" (click)="openUser(user)">
+                  <span class="user-row-name">{{ user.name }}</span>
+                  <span>@{{ user.username }}</span>
+                  <span class="user-row-email">{{ user.email }}</span>
+                  <span>
+                    <span class="role-pill" [class.is-admin]="user.role === 'admin'">
+                      {{ user.role === 'admin' ? dictionary.admin.roleAdmin : dictionary.admin.roleUser }}
+                    </span>
+                  </span>
+                  <span>{{ formatJoinedDate(user.createdAt) }}</span>
+                  <span class="user-row-link">{{ dictionary.admin.openDetail }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  @if (activeModal === 'create') {
+    <div class="admin-modal-backdrop" (click)="closeModal()">
+      <div class="admin-modal" (click)="$event.stopPropagation()">
+        <div class="admin-modal-head">
+          <div>
+            <h2>{{ dictionary.admin.createTitle }}</h2>
+            <p>{{ dictionary.admin.createHelp }}</p>
+          </div>
+          <button class="admin-modal-close" type="button" (click)="closeModal()">
+            {{ dictionary.auth.close }}
+          </button>
+        </div>
+
+        <form class="form-panel admin-modal-form" (ngSubmit)="createUser()">
+          <div class="two-column-grid">
+            <div class="field-group">
+              <label for="managed-name">{{ dictionary.auth.name }}</label>
+              <input id="managed-name" name="managedName" [(ngModel)]="createForm.name" />
+            </div>
+            <div class="field-group">
+              <label for="managed-username">{{ dictionary.auth.username }}</label>
+              <input id="managed-username" name="managedUsername" [(ngModel)]="createForm.username" />
+            </div>
+            <div class="field-group">
+              <label for="managed-email">{{ dictionary.auth.email }}</label>
+              <input id="managed-email" name="managedEmail" type="email" [(ngModel)]="createForm.email" />
+            </div>
+            <div class="field-group">
+              <label for="managed-password">{{ dictionary.auth.password }}</label>
+              <input
+                id="managed-password"
+                name="managedPassword"
+                type="password"
+                [(ngModel)]="createForm.password"
+              />
+            </div>
+          </div>
+
+          @if (modalFeedback) {
+            <div
+              class="form-feedback"
+              [class.is-success]="modalFeedback.status === 'success'"
+              [class.is-error]="modalFeedback.status === 'error'"
+            >
+              <p>{{ modalFeedback.message }}</p>
+            </div>
+          }
+
+          <div class="admin-modal-actions">
+            <button class="primary-button" type="submit" [disabled]="!isCreateValid() || isSaving">
+              {{ isSaving ? dictionary.common.sending : dictionary.auth.createAccount }}
+            </button>
+            <button class="secondary-button" type="button" (click)="closeModal()">
+              {{ dictionary.auth.close }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (activeModal === 'detail' && selectedUser) {
+    <div class="admin-modal-backdrop" (click)="closeModal()">
+      <div class="admin-modal" (click)="$event.stopPropagation()">
+        <div class="admin-modal-head">
+          <div>
+            <h2>{{ dictionary.admin.detailTitle }}</h2>
+            <p>{{ dictionary.admin.detailHelp }}</p>
+          </div>
+          <button class="admin-modal-close" type="button" (click)="closeModal()">
+            {{ dictionary.auth.close }}
+          </button>
+        </div>
+
+        <div class="admin-detail-grid">
+          <div class="content-panel is-soft">
+            <h3>{{ dictionary.admin.personalInfo }}</h3>
+            <p><strong>{{ selectedUser.name }}</strong></p>
+            <p>@{{ selectedUser.username }}</p>
+            <p>{{ selectedUser.email }}</p>
+            <p>{{ dictionary.profile.memberSince }}: {{ formatJoinedDate(selectedUser.createdAt) }}</p>
+          </div>
+
+          <form class="form-panel admin-modal-form" (ngSubmit)="saveUser()">
+            <h3>{{ dictionary.admin.updateTitle }}</h3>
+            <div class="field-group">
+              <label for="detail-username">{{ dictionary.auth.username }}</label>
+              <input id="detail-username" name="detailUsername" [(ngModel)]="detailForm.username" />
+            </div>
+            <div class="field-group">
+              <label for="detail-role">{{ dictionary.admin.role }}</label>
+              <select id="detail-role" name="detailRole" [(ngModel)]="detailForm.role">
+                <option value="user">{{ dictionary.admin.roleUser }}</option>
+                <option value="admin">{{ dictionary.admin.roleAdmin }}</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="detail-password">{{ dictionary.admin.resetPassword }}</label>
+              <input
+                id="detail-password"
+                name="detailPassword"
+                type="password"
+                [(ngModel)]="detailForm.password"
+              />
+              <p class="field-help">{{ dictionary.admin.resetPasswordHelp }}</p>
+            </div>
+
+            @if (modalFeedback) {
+              <div
+                class="form-feedback"
+                [class.is-success]="modalFeedback.status === 'success'"
+                [class.is-error]="modalFeedback.status === 'error'"
+              >
+                <p>{{ modalFeedback.message }}</p>
+              </div>
+            }
+
+            <div class="admin-modal-actions">
+              <button class="primary-button" type="submit" [disabled]="!isDetailValid() || isSaving">
+                {{ isSaving ? dictionary.common.sending : dictionary.profile.save }}
+              </button>
+              <button class="secondary-button" type="button" (click)="closeModal()">
+                {{ dictionary.auth.close }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+</div>

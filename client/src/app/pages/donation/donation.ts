@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -17,6 +17,7 @@ import { DonationForm, Locale } from '../../models';
 })
 export class Donation implements OnInit, OnDestroy {
   private readonly api = inject(Api);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly i18n = inject(I18n);
   private readonly subscriptions = new Subscription();
 
@@ -34,6 +35,7 @@ export class Donation implements OnInit, OnDestroy {
         this.locale = this.i18n.locale;
         this.dictionary = this.i18n.dictionary;
         this.form.country = this.locale === 'mn' ? 'Mongolia' : this.form.country;
+        this.syncView();
       }),
     );
   }
@@ -84,10 +86,12 @@ export class Donation implements OnInit, OnDestroy {
         this.feedback = { status: 'success', message: this.dictionary.donation.successBody };
         this.form = this.defaultForm();
         this.isSubmitting = false;
+        this.syncView();
       },
       error: () => {
         this.feedback = { status: 'error', message: this.dictionary.common.submitError };
         this.isSubmitting = false;
+        this.syncView();
       },
     });
   }
@@ -111,5 +115,9 @@ export class Donation implements OnInit, OnDestroy {
       consentAccepted: false,
       captchaPassed: false,
     };
+  }
+
+  private syncView() {
+    queueMicrotask(() => this.cdr.detectChanges());
   }
 }

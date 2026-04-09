@@ -1,0 +1,808 @@
+<div class="page-stack">
+  <div class="container section-tight">
+    <nav class="breadcrumbs">
+      <a [routerLink]="routeTo()">{{ dictionary.common.home }}</a
+      ><span class="breadcrumb-separator">/</span><span>{{ pageTitle() }}</span>
+    </nav>
+  </div>
+  <section class="page-hero">
+    <div class="container page-hero-inner">
+      <div class="page-hero-copy">
+        <h1>{{ pageTitle() }}</h1>
+        <p>{{ pageBody() }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container section">
+    @if (!currentUser) {
+      <div class="empty-state">
+        <h2>{{ dictionary.profile.signedOutTitle }}</h2>
+        <p>{{ dictionary.profile.signedOutBody }}</p>
+      </div>
+    } @else if (!isAdmin()) {
+      <div class="empty-state">
+        <h2>{{ dictionary.admin.accessDeniedTitle }}</h2>
+        <p>{{ dictionary.admin.accessDeniedBody }}</p>
+      </div>
+    } @else {
+      <div class="content-admin-layout">
+        @if (dashboardFeedback) {
+          <div
+            class="form-feedback"
+            [class.is-success]="dashboardFeedback.status === 'success'"
+            [class.is-error]="dashboardFeedback.status === 'error'"
+          >
+            <p>{{ dashboardFeedback.message }}</p>
+          </div>
+        }
+
+        @if (isLoading) {
+          <div class="content-panel empty-state">
+            <p>{{ dictionary.common.sending }}</p>
+          </div>
+        } @else {
+          @if (sectionKind === 'events') {
+            <section class="content-admin-section">
+              <div class="content-admin-head">
+                <div>
+                  <h2>{{ dictionary.admin.eventsDashboardTitle }}</h2>
+                <p>{{ dictionary.admin.eventsDashboardBody }}</p>
+              </div>
+              <button class="primary-button" type="button" (click)="openCreateEventModal()">
+                {{ dictionary.admin.createEventButton }}
+              </button>
+            </div>
+
+            <div class="dashboard-metrics">
+              <article class="metric-card">
+                <strong>{{ events.length }}</strong>
+                <span>{{ dictionary.admin.totalItems }}</span>
+              </article>
+              <article class="metric-card">
+                <strong>{{ countPublished(events) }}</strong>
+                <span>{{ dictionary.admin.publishedItems }}</span>
+              </article>
+              <article class="metric-card">
+                <strong>{{ countDraft(events) }}</strong>
+                <span>{{ dictionary.admin.draftItems }}</span>
+              </article>
+            </div>
+
+            @if (!events.length) {
+              <div class="content-panel empty-state">
+                <p>{{ dictionary.admin.noEvents }}</p>
+              </div>
+            } @else {
+              <div class="content-card-grid">
+                @for (event of events; track event.id) {
+                  <button class="content-card" type="button" (click)="openEditEventModal(event)">
+                    <div class="content-card-top">
+                      <span class="locale-pill">{{ event.locale | uppercase }}</span>
+                      <span class="status-pill" [class.is-draft]="!event.published">
+                        {{ statusLabel(event.published) }}
+                      </span>
+                    </div>
+                    <h3>{{ event.title }}</h3>
+                    <p>{{ event.summary }}</p>
+                    <div class="content-card-meta">
+                      <span>{{ formatDate(event.date) }}</span>
+                      @if (event.location) {
+                        <span>{{ event.location }}</span>
+                      } @else if (event.organizer) {
+                        <span>{{ event.organizer }}</span>
+                      }
+                    </div>
+                    <span class="content-card-link">{{ dictionary.admin.openEditor }}</span>
+                  </button>
+                }
+              </div>
+            }
+            </section>
+          }
+
+          @if (sectionKind === 'daily-corner') {
+            <section class="content-admin-section">
+              <div class="content-admin-head">
+                <div>
+                  <h2>{{ dictionary.admin.dailyDashboardTitle }}</h2>
+                <p>{{ dictionary.admin.dailyDashboardBody }}</p>
+              </div>
+              <button class="primary-button" type="button" (click)="openCreateDailyModal()">
+                {{ dictionary.admin.createDailyButton }}
+              </button>
+            </div>
+
+            <div class="dashboard-metrics">
+              <article class="metric-card">
+                <strong>{{ dailyEntries.length }}</strong>
+                <span>{{ dictionary.admin.totalItems }}</span>
+              </article>
+              <article class="metric-card">
+                <strong>{{ countPublished(dailyEntries) }}</strong>
+                <span>{{ dictionary.admin.publishedItems }}</span>
+              </article>
+              <article class="metric-card">
+                <strong>{{ countDraft(dailyEntries) }}</strong>
+                <span>{{ dictionary.admin.draftItems }}</span>
+              </article>
+            </div>
+
+            @if (!dailyEntries.length) {
+              <div class="content-panel empty-state">
+                <p>{{ dictionary.admin.noDailyEntries }}</p>
+              </div>
+            } @else {
+              <div class="content-card-grid">
+                @for (entry of dailyEntries; track entry.id) {
+                  <button class="content-card" type="button" (click)="openEditDailyModal(entry)">
+                    <div class="content-card-top">
+                      <span class="locale-pill">{{ entry.locale | uppercase }}</span>
+                      <span class="status-pill" [class.is-draft]="!entry.published">
+                        {{ statusLabel(entry.published) }}
+                      </span>
+                    </div>
+                    <h3>{{ entry.title }}</h3>
+                    <p>{{ entry.quote || entry.body }}</p>
+                    <div class="content-card-meta">
+                      <span>{{ formatDate(entry.date) }}</span>
+                      @if (entry.audioUrl) {
+                        <span>{{ dictionary.common.audio }}</span>
+                      }
+                    </div>
+                    <span class="content-card-link">{{ dictionary.admin.openEditor }}</span>
+                  </button>
+                }
+              </div>
+            }
+            </section>
+          }
+
+          @if (sectionKind === 'diseases') {
+            <section class="content-admin-section">
+              <div class="content-admin-head">
+                <div>
+                  <h2>{{ dictionary.admin.diseasesDashboardTitle }}</h2>
+                <p>{{ dictionary.admin.diseasesDashboardBody }}</p>
+              </div>
+              <button class="primary-button" type="button" (click)="openCreateDiseaseModal()">
+                {{ dictionary.admin.createDiseaseButton }}
+              </button>
+            </div>
+
+            <div class="dashboard-metrics">
+              <article class="metric-card">
+                <strong>{{ diseases.length }}</strong>
+                <span>{{ dictionary.admin.totalItems }}</span>
+              </article>
+              <article class="metric-card">
+                <strong>{{ countPublished(diseases) }}</strong>
+                <span>{{ dictionary.admin.publishedItems }}</span>
+              </article>
+              <article class="metric-card">
+                <strong>{{ countDraft(diseases) }}</strong>
+                <span>{{ dictionary.admin.draftItems }}</span>
+              </article>
+            </div>
+
+            @if (!diseases.length) {
+              <div class="content-panel empty-state">
+                <p>{{ dictionary.admin.noDiseases }}</p>
+              </div>
+            } @else {
+              <div class="content-card-grid">
+                @for (disease of diseases; track disease.id) {
+                  <button class="content-card" type="button" (click)="openEditDiseaseModal(disease)">
+                    <div class="content-card-top">
+                      <span class="locale-pill">{{ disease.locale | uppercase }}</span>
+                      <span class="status-pill" [class.is-draft]="!disease.published">
+                        {{ statusLabel(disease.published) }}
+                      </span>
+                    </div>
+                    <h3>{{ disease.name }}</h3>
+                    <p>{{ disease.shortDescription }}</p>
+                    <div class="content-card-meta">
+                      <span>{{ disease.category }}</span>
+                      <span>
+                        {{ dictionary.admin.updatedAtLabel }}: {{ formatUpdatedDate(disease.updatedAt) }}
+                      </span>
+                    </div>
+                    <span class="content-card-link">{{ dictionary.admin.openEditor }}</span>
+                  </button>
+                }
+              </div>
+            }
+            </section>
+          }
+        }
+      </div>
+    }
+  </section>
+
+  @if (activeModal === 'create-event' || activeModal === 'edit-event') {
+    <div class="admin-modal-backdrop" (click)="closeModal()">
+      <div class="admin-modal admin-modal-wide" (click)="$event.stopPropagation()">
+        <div class="admin-modal-head">
+          <div>
+            <h2>{{
+              activeModal === 'create-event'
+                ? dictionary.admin.createEventTitle
+                : dictionary.admin.editEventTitle
+            }}</h2>
+            <p>{{ dictionary.admin.createEventHelp }}</p>
+          </div>
+          <button class="admin-modal-close" type="button" (click)="closeModal()">
+            {{ dictionary.auth.close }}
+          </button>
+        </div>
+
+        <form class="form-panel admin-modal-form" (ngSubmit)="saveEvent()">
+          <div class="admin-form-section">
+            <div class="section-heading">
+              <h2>{{ dictionary.admin.publishingSection }}</h2>
+              <p>{{ dictionary.admin.visualToneHelp }}</p>
+            </div>
+            <div class="two-column-grid compact">
+              <div class="field-group">
+                <label for="event-locale">{{ dictionary.admin.localeLabel }}</label>
+                <select id="event-locale" name="eventLocale" [(ngModel)]="eventForm.locale">
+                  <option value="mn">MN</option>
+                  <option value="en">EN</option>
+                </select>
+              </div>
+              <label class="admin-toggle">
+                <input type="checkbox" name="eventPublished" [(ngModel)]="eventForm.published" />
+                <span>{{ dictionary.admin.publishLabel }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="admin-form-section">
+            <div class="section-heading">
+              <h2>{{ dictionary.admin.basicsSection }}</h2>
+            </div>
+            <div class="two-column-grid">
+              <div class="field-group full-width">
+                <label for="event-title">{{ dictionary.events.title }}</label>
+                <input id="event-title" name="eventTitle" [(ngModel)]="eventForm.title" />
+              </div>
+              <div class="field-group full-width">
+                <label for="event-summary">{{ dictionary.admin.summaryLabel }}</label>
+                <textarea
+                  id="event-summary"
+                  name="eventSummary"
+                  rows="3"
+                  [(ngModel)]="eventForm.summary"
+                ></textarea>
+              </div>
+              <div class="field-group full-width">
+                <label for="event-description">{{ dictionary.admin.descriptionLabel }}</label>
+                <textarea
+                  id="event-description"
+                  name="eventDescription"
+                  rows="5"
+                  [(ngModel)]="eventForm.description"
+                ></textarea>
+              </div>
+              <div class="field-group">
+                <label for="event-date">{{ dictionary.admin.dateLabel }}</label>
+                <input id="event-date" name="eventDate" type="date" [(ngModel)]="eventForm.date" />
+              </div>
+              <div class="field-group">
+                <label for="event-organizer">{{ dictionary.events.organizer }}</label>
+                <input id="event-organizer" name="eventOrganizer" [(ngModel)]="eventForm.organizer" />
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-form-section">
+            <div class="section-heading">
+              <h2>{{ dictionary.admin.detailsSection }}</h2>
+            </div>
+            <div class="two-column-grid">
+              <div class="field-group">
+                <label for="event-start-time">{{ dictionary.admin.startTimeLabel }}</label>
+                <input
+                  id="event-start-time"
+                  name="eventStartTime"
+                  type="time"
+                  [(ngModel)]="eventForm.startTime"
+                />
+              </div>
+              <div class="field-group">
+                <label for="event-end-time">{{ dictionary.admin.endTimeLabel }}</label>
+                <input
+                  id="event-end-time"
+                  name="eventEndTime"
+                  type="time"
+                  [(ngModel)]="eventForm.endTime"
+                />
+              </div>
+              <div class="field-group">
+                <label for="event-location">{{ dictionary.events.location }}</label>
+                <input id="event-location" name="eventLocation" [(ngModel)]="eventForm.location" />
+              </div>
+              <div class="field-group">
+                <label for="event-link">{{ dictionary.admin.eventLinkLabel }}</label>
+                <input id="event-link" name="eventLink" type="url" [(ngModel)]="eventForm.link" />
+              </div>
+              <div class="field-group">
+                <label for="event-tone">{{ dictionary.admin.visualToneLabel }}</label>
+                <select id="event-tone" name="eventTone" [(ngModel)]="eventForm.image">
+                  <option value="">{{ dictionary.admin.toneForum }}</option>
+                  <option value="fundraiser">{{ dictionary.admin.toneFundraiser }}</option>
+                  <option value="webinar">{{ dictionary.admin.toneWebinar }}</option>
+                </select>
+                <p class="field-help">{{ dictionary.admin.visualToneHelp }}</p>
+              </div>
+            </div>
+          </div>
+
+          @if (modalFeedback) {
+            <div
+              class="form-feedback"
+              [class.is-success]="modalFeedback.status === 'success'"
+              [class.is-error]="modalFeedback.status === 'error'"
+            >
+              <p>{{ modalFeedback.message }}</p>
+            </div>
+          }
+
+          <div class="admin-modal-actions">
+            <button class="primary-button" type="submit" [disabled]="!isEventValid() || isSaving">
+              {{
+                isSaving
+                  ? dictionary.common.sending
+                  : activeModal === 'create-event'
+                    ? dictionary.admin.createEventButton
+                    : dictionary.profile.save
+              }}
+            </button>
+            @if (activeModal === 'edit-event') {
+              <button class="danger-button" type="button" [disabled]="isSaving" (click)="deleteEvent()">
+                {{ dictionary.admin.deleteEvent }}
+              </button>
+            }
+            <button class="secondary-button" type="button" (click)="closeModal()">
+              {{ dictionary.auth.close }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (activeModal === 'create-daily' || activeModal === 'edit-daily') {
+    <div class="admin-modal-backdrop" (click)="closeModal()">
+      <div class="admin-modal admin-modal-wide" (click)="$event.stopPropagation()">
+        <div class="admin-modal-head">
+          <div>
+            <h2>{{
+              activeModal === 'create-daily'
+                ? dictionary.admin.createDailyTitle
+                : dictionary.admin.editDailyTitle
+            }}</h2>
+            <p>{{ dictionary.admin.createDailyHelp }}</p>
+          </div>
+          <button class="admin-modal-close" type="button" (click)="closeModal()">
+            {{ dictionary.auth.close }}
+          </button>
+        </div>
+
+        <form class="form-panel admin-modal-form" (ngSubmit)="saveDailyCorner()">
+          <div class="admin-form-section">
+            <div class="section-heading">
+              <h2>{{ dictionary.admin.publishingSection }}</h2>
+            </div>
+            <div class="two-column-grid compact">
+              <div class="field-group">
+                <label for="daily-locale">{{ dictionary.admin.localeLabel }}</label>
+                <select id="daily-locale" name="dailyLocale" [(ngModel)]="dailyForm.locale">
+                  <option value="mn">MN</option>
+                  <option value="en">EN</option>
+                </select>
+              </div>
+              <label class="admin-toggle">
+                <input type="checkbox" name="dailyPublished" [(ngModel)]="dailyForm.published" />
+                <span>{{ dictionary.admin.publishLabel }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="admin-form-section">
+            <div class="section-heading">
+              <h2>{{ dictionary.admin.basicsSection }}</h2>
+            </div>
+            <div class="two-column-grid">
+              <div class="field-group">
+                <label for="daily-date">{{ dictionary.admin.dateLabel }}</label>
+                <input id="daily-date" name="dailyDate" type="date" [(ngModel)]="dailyForm.date" />
+              </div>
+              <div class="field-group">
+                <label for="daily-tone">{{ dictionary.admin.visualToneLabel }}</label>
+                <select id="daily-tone" name="dailyTone" [(ngModel)]="dailyForm.image">
+                  <option value="">{{ dictionary.admin.toneCalm }}</option>
+                  <option value="listen">{{ dictionary.admin.toneListen }}</option>
+                  <option value="balance">{{ dictionary.admin.toneBalance }}</option>
+                </select>
+              </div>
+              <div class="field-group full-width">
+                <label for="daily-title">{{ dictionary.dailyCorner.title }}</label>
+                <input id="daily-title" name="dailyTitle" [(ngModel)]="dailyForm.title" />
+              </div>
+              <div class="field-group full-width">
+                <label for="daily-quote">{{ dictionary.admin.quoteLabel }}</label>
+                <textarea
+                  id="daily-quote"
+                  name="dailyQuote"
+                  rows="2"
+                  [(ngModel)]="dailyForm.quote"
+                ></textarea>
+              </div>
+              <div class="field-group full-width">
+                <label for="daily-body">{{ dictionary.admin.descriptionLabel }}</label>
+                <textarea
+                  id="daily-body"
+                  name="dailyBody"
+                  rows="6"
+                  [(ngModel)]="dailyForm.body"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-form-section">
+            <div class="section-heading">
+              <h2>{{ dictionary.admin.detailsSection }}</h2>
+            </div>
+            <div class="two-column-grid">
+              <div class="field-group">
+                <label for="daily-reminder-title">{{ dictionary.admin.reminderTitleLabel }}</label>
+                <input
+                  id="daily-reminder-title"
+                  name="dailyReminderTitle"
+                  [(ngModel)]="dailyForm.reminderTitle"
+                />
+              </div>
+              <div class="field-group">
+                <label for="daily-audio-url">{{ dictionary.admin.audioUrlLabel }}</label>
+                <input
+                  id="daily-audio-url"
+                  name="dailyAudioUrl"
+                  type="url"
+                  [(ngModel)]="dailyForm.audioUrl"
+                />
+              </div>
+              <div class="field-group full-width">
+                <label for="daily-reminder-body">{{ dictionary.admin.reminderBodyLabel }}</label>
+                <textarea
+                  id="daily-reminder-body"
+                  name="dailyReminderBody"
+                  rows="4"
+                  [(ngModel)]="dailyForm.reminderBody"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          @if (modalFeedback) {
+            <div
+              class="form-feedback"
+              [class.is-success]="modalFeedback.status === 'success'"
+              [class.is-error]="modalFeedback.status === 'error'"
+            >
+              <p>{{ modalFeedback.message }}</p>
+            </div>
+          }
+
+          <div class="admin-modal-actions">
+            <button class="primary-button" type="submit" [disabled]="!isDailyValid() || isSaving">
+              {{
+                isSaving
+                  ? dictionary.common.sending
+                  : activeModal === 'create-daily'
+                    ? dictionary.admin.createDailyButton
+                    : dictionary.profile.save
+              }}
+            </button>
+            @if (activeModal === 'edit-daily') {
+              <button class="danger-button" type="button" [disabled]="isSaving" (click)="deleteDailyCorner()">
+                {{ dictionary.admin.deleteDaily }}
+              </button>
+            }
+            <button class="secondary-button" type="button" (click)="closeModal()">
+              {{ dictionary.auth.close }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (activeModal === 'create-disease' || activeModal === 'edit-disease') {
+    <div class="admin-modal-backdrop" (click)="closeModal()">
+      <div class="admin-modal admin-modal-xwide" (click)="$event.stopPropagation()">
+        <div class="admin-modal-head">
+          <div>
+            <h2>{{
+              activeModal === 'create-disease'
+                ? dictionary.admin.createDiseaseTitle
+                : dictionary.admin.editDiseaseTitle
+            }}</h2>
+            <p>{{ dictionary.admin.createDiseaseHelp }}</p>
+          </div>
+          <button class="admin-modal-close" type="button" (click)="closeModal()">
+            {{ dictionary.auth.close }}
+          </button>
+        </div>
+
+        <form class="form-panel admin-modal-form" (ngSubmit)="saveDisease()">
+          <div class="admin-form-section">
+            <div class="section-heading">
+              <h2>{{ dictionary.admin.publishingSection }}</h2>
+            </div>
+            <div class="two-column-grid compact">
+              <div class="field-group">
+                <label for="disease-locale">{{ dictionary.admin.localeLabel }}</label>
+                <select id="disease-locale" name="diseaseLocale" [(ngModel)]="diseaseForm.locale">
+                  <option value="mn">MN</option>
+                  <option value="en">EN</option>
+                </select>
+              </div>
+              <label class="admin-toggle">
+                <input
+                  type="checkbox"
+                  name="diseasePublished"
+                  [(ngModel)]="diseaseForm.published"
+                />
+                <span>{{ dictionary.admin.publishLabel }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="admin-form-section">
+            <div class="section-heading">
+              <h2>{{ dictionary.admin.basicsSection }}</h2>
+            </div>
+            <div class="two-column-grid">
+              <div class="field-group">
+                <label for="disease-name">{{ dictionary.nav.diseaseInformation }}</label>
+                <input id="disease-name" name="diseaseName" [(ngModel)]="diseaseForm.name" />
+              </div>
+              <div class="field-group">
+                <label for="disease-category">{{ dictionary.diseases.categoryLabel }}</label>
+                <input id="disease-category" name="diseaseCategory" [(ngModel)]="diseaseForm.category" />
+              </div>
+              <div class="field-group">
+                <label for="disease-slug">{{ dictionary.admin.slugLabel }}</label>
+                <input id="disease-slug" name="diseaseSlug" [(ngModel)]="diseaseForm.slug" />
+                <p class="field-help">{{ dictionary.admin.slugHelp }}</p>
+              </div>
+              <div class="field-group">
+                <label for="disease-aliases">{{ dictionary.admin.aliasesLabel }}</label>
+                <input id="disease-aliases" name="diseaseAliases" [(ngModel)]="diseaseForm.aliasesText" />
+                <p class="field-help">{{ dictionary.admin.aliasesHelp }}</p>
+              </div>
+              <div class="field-group full-width">
+                <label for="disease-short-description">{{ dictionary.admin.shortDescriptionLabel }}</label>
+                <textarea
+                  id="disease-short-description"
+                  name="diseaseShortDescription"
+                  rows="3"
+                  [(ngModel)]="diseaseForm.shortDescription"
+                ></textarea>
+              </div>
+              <div class="field-group full-width">
+                <label for="disease-medical-summary">{{ dictionary.diseases.medicalSummary }}</label>
+                <textarea
+                  id="disease-medical-summary"
+                  name="diseaseMedicalSummary"
+                  rows="5"
+                  [(ngModel)]="diseaseForm.summaryMedical"
+                ></textarea>
+              </div>
+              <div class="field-group full-width">
+                <label for="disease-simple-summary">{{ dictionary.diseases.simpleSummary }}</label>
+                <textarea
+                  id="disease-simple-summary"
+                  name="diseaseSimpleSummary"
+                  rows="5"
+                  [(ngModel)]="diseaseForm.summarySimple"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-form-section">
+            <div class="section-heading">
+              <h2>{{ dictionary.admin.causesSection }}</h2>
+            </div>
+            <div class="admin-repeaters">
+              @for (cause of diseaseForm.causes; track $index; let index = $index) {
+                <div class="admin-repeater-card">
+                  <div class="admin-repeater-head">
+                    <h3>{{ dictionary.admin.causeTitleLabel }} {{ index + 1 }}</h3>
+                    <button class="secondary-button" type="button" (click)="removeCause(index)">
+                      {{ dictionary.admin.removeCause }}
+                    </button>
+                  </div>
+                  <div class="two-column-grid">
+                    <div class="field-group">
+                      <label [for]="'cause-title-' + index">{{ dictionary.admin.causeTitleLabel }}</label>
+                      <input
+                        [id]="'cause-title-' + index"
+                        [name]="'causeTitle' + index"
+                        [(ngModel)]="cause.title"
+                      />
+                    </div>
+                    <div class="field-group">
+                      <label [for]="'cause-image-' + index">{{ dictionary.admin.causeImageLabel }}</label>
+                      <input
+                        [id]="'cause-image-' + index"
+                        [name]="'causeImage' + index"
+                        [(ngModel)]="cause.image"
+                      />
+                    </div>
+                    <div class="field-group full-width">
+                      <label [for]="'cause-description-' + index">{{
+                        dictionary.admin.causeDescriptionLabel
+                      }}</label>
+                      <textarea
+                        [id]="'cause-description-' + index"
+                        [name]="'causeDescription' + index"
+                        rows="4"
+                        [(ngModel)]="cause.description"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+            <button class="secondary-button" type="button" (click)="addCause()">
+              {{ dictionary.admin.addCause }}
+            </button>
+          </div>
+
+          <div class="admin-form-section">
+            <div class="section-heading">
+              <h2>{{ dictionary.admin.symptomsSection }}</h2>
+            </div>
+            <div class="admin-repeaters">
+              @for (symptom of diseaseForm.symptoms; track $index; let index = $index) {
+                <div class="admin-repeater-card">
+                  <div class="admin-repeater-head">
+                    <h3>{{ dictionary.admin.symptomTermLabel }} {{ index + 1 }}</h3>
+                    <button class="secondary-button" type="button" (click)="removeSymptom(index)">
+                      {{ dictionary.admin.removeSymptom }}
+                    </button>
+                  </div>
+                  <div class="two-column-grid">
+                    <div class="field-group">
+                      <label [for]="'symptom-term-' + index">{{ dictionary.admin.symptomTermLabel }}</label>
+                      <input
+                        [id]="'symptom-term-' + index"
+                        [name]="'symptomTerm' + index"
+                        [(ngModel)]="symptom.medicalTerm"
+                      />
+                    </div>
+                    <div class="field-group">
+                      <label [for]="'symptom-frequency-' + index">{{ dictionary.admin.frequencyLabel }}</label>
+                      <input
+                        [id]="'symptom-frequency-' + index"
+                        [name]="'symptomFrequency' + index"
+                        [(ngModel)]="symptom.frequency"
+                      />
+                    </div>
+                    <div class="field-group">
+                      <label [for]="'symptom-body-system-' + index">{{ dictionary.admin.bodySystemLabel }}</label>
+                      <input
+                        [id]="'symptom-body-system-' + index"
+                        [name]="'symptomBodySystem' + index"
+                        [(ngModel)]="symptom.bodySystem"
+                      />
+                    </div>
+                    <div class="field-group">
+                      <label [for]="'symptom-synonyms-' + index">{{ dictionary.admin.synonymLabel }}</label>
+                      <input
+                        [id]="'symptom-synonyms-' + index"
+                        [name]="'symptomSynonyms' + index"
+                        [(ngModel)]="symptom.synonymsText"
+                      />
+                      <p class="field-help">{{ dictionary.admin.synonymHelp }}</p>
+                    </div>
+                    <div class="field-group full-width">
+                      <label [for]="'symptom-description-' + index">{{
+                        dictionary.diseases.symptomDescription
+                      }}</label>
+                      <textarea
+                        [id]="'symptom-description-' + index"
+                        [name]="'symptomDescription' + index"
+                        rows="4"
+                        [(ngModel)]="symptom.description"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+            <button class="secondary-button" type="button" (click)="addSymptom()">
+              {{ dictionary.admin.addSymptom }}
+            </button>
+          </div>
+
+          <div class="admin-form-section">
+            <div class="section-heading">
+              <h2>{{ dictionary.admin.referencesSection }}</h2>
+            </div>
+            <div class="admin-repeaters">
+              @for (reference of diseaseForm.references; track $index; let index = $index) {
+                <div class="admin-repeater-card">
+                  <div class="admin-repeater-head">
+                    <h3>{{ dictionary.admin.referenceTitleLabel }} {{ index + 1 }}</h3>
+                    <button class="secondary-button" type="button" (click)="removeReference(index)">
+                      {{ dictionary.admin.removeReference }}
+                    </button>
+                  </div>
+                  <div class="two-column-grid">
+                    <div class="field-group">
+                      <label [for]="'reference-title-' + index">{{
+                        dictionary.admin.referenceTitleLabel
+                      }}</label>
+                      <input
+                        [id]="'reference-title-' + index"
+                        [name]="'referenceTitle' + index"
+                        [(ngModel)]="reference.title"
+                      />
+                    </div>
+                    <div class="field-group">
+                      <label [for]="'reference-url-' + index">{{ dictionary.admin.referenceUrlLabel }}</label>
+                      <input
+                        [id]="'reference-url-' + index"
+                        [name]="'referenceUrl' + index"
+                        type="url"
+                        [(ngModel)]="reference.url"
+                      />
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+            <button class="secondary-button" type="button" (click)="addReference()">
+              {{ dictionary.admin.addReference }}
+            </button>
+          </div>
+
+          @if (modalFeedback) {
+            <div
+              class="form-feedback"
+              [class.is-success]="modalFeedback.status === 'success'"
+              [class.is-error]="modalFeedback.status === 'error'"
+            >
+              <p>{{ modalFeedback.message }}</p>
+            </div>
+          }
+
+          <div class="admin-modal-actions">
+            <button class="primary-button" type="submit" [disabled]="!isDiseaseValid() || isSaving">
+              {{
+                isSaving
+                  ? dictionary.common.sending
+                  : activeModal === 'create-disease'
+                    ? dictionary.admin.createDiseaseButton
+                    : dictionary.profile.save
+              }}
+            </button>
+            @if (activeModal === 'edit-disease') {
+              <button class="danger-button" type="button" [disabled]="isSaving" (click)="deleteDisease()">
+                {{ dictionary.admin.deleteDisease }}
+              </button>
+            }
+            <button class="secondary-button" type="button" (click)="closeModal()">
+              {{ dictionary.auth.close }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

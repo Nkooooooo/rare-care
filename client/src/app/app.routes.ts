@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { Community } from './pages/community/community';
+import { ContentManagement } from './pages/content-management/content-management';
 import { Contact } from './pages/contact/contact';
 import { DailyCorner } from './pages/daily-corner/daily-corner';
 import { DiseaseDetail } from './pages/disease-detail/disease-detail';
@@ -10,6 +11,7 @@ import { Events } from './pages/events/events';
 import { Home } from './pages/home/home';
 import { Legal } from './pages/legal/legal';
 import { Profile } from './pages/profile/profile';
+import { UserManagement } from './pages/user-management/user-management';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -21,6 +23,11 @@ export const routes: Routes = [
   { path: 'community', component: Community },
   { path: 'contact', component: Contact },
   { path: 'profile', component: Profile },
+  { path: 'user-management', component: UserManagement },
+  { path: 'event-management', component: ContentManagement, data: { kind: 'events' } },
+  { path: 'daily-corner-management', component: ContentManagement, data: { kind: 'daily-corner' } },
+  { path: 'disease-management', component: ContentManagement, data: { kind: 'diseases' } },
+  { path: 'content-management', redirectTo: 'event-management', pathMatch: 'full' },
   { path: 'privacy-policy', component: Legal, data: { kind: 'privacy' } },
   { path: 'disclaimer', component: Legal, data: { kind: 'disclaimer' } },
   { path: 'accessibility', redirectTo: '', pathMatch: 'full' },
@@ -33,6 +40,11 @@ export const routes: Routes = [
   { path: 'mn/community', redirectTo: 'community' },
   { path: 'mn/contact', redirectTo: 'contact' },
   { path: 'mn/profile', redirectTo: 'profile' },
+  { path: 'mn/user-management', redirectTo: 'user-management' },
+  { path: 'mn/event-management', redirectTo: 'event-management' },
+  { path: 'mn/daily-corner-management', redirectTo: 'daily-corner-management' },
+  { path: 'mn/disease-management', redirectTo: 'disease-management' },
+  { path: 'mn/content-management', redirectTo: 'event-management' },
   { path: 'mn/privacy-policy', redirectTo: 'privacy-policy' },
   { path: 'mn/disclaimer', redirectTo: 'disclaimer' },
   { path: 'mn/accessibility', redirectTo: '', pathMatch: 'full' },
@@ -45,6 +57,11 @@ export const routes: Routes = [
   { path: 'en/community', redirectTo: 'community' },
   { path: 'en/contact', redirectTo: 'contact' },
   { path: 'en/profile', redirectTo: 'profile' },
+  { path: 'en/user-management', redirectTo: 'user-management' },
+  { path: 'en/event-management', redirectTo: 'event-management' },
+  { path: 'en/daily-corner-management', redirectTo: 'daily-corner-management' },
+  { path: 'en/disease-management', redirectTo: 'disease-management' },
+  { path: 'en/content-management', redirectTo: 'event-management' },
   { path: 'en/privacy-policy', redirectTo: 'privacy-policy' },
   { path: 'en/disclaimer', redirectTo: 'disclaimer' },
   { path: 'en/accessibility', redirectTo: '', pathMatch: 'full' },

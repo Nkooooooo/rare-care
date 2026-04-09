@@ -1,0 +1,11 @@
+{
+  "admins": [
+    {
+      "username": "nomin",
+      "password": "12345678",
+      "name": "Nomin",
+      "email": "nomin@rarecare.mn",
+      "role": "admin"
+    }
+  ]
+}
