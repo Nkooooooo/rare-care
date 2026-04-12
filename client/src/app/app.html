@@ -2,7 +2,9 @@
   <header class="site-header">
     <div class="container header-topline">
       <a class="brand-link" [routerLink]="route()">
-        <span class="site-logo site-logo-medium"><img alt="Rare Care logo" src="/logo.png" /></span>
+        <span class="site-logo site-logo-medium"
+          ><img [attr.alt]="dictionary.siteName + ' logo'" src="/logo.png"
+        /></span>
         <span class="brand-wordmark"
           ><strong>{{ dictionary.siteName }}</strong
           ><span>{{ dictionary.common.siteRegion }}</span></span
@@ -339,7 +341,9 @@
   <footer class="site-footer">
     <div class="container footer-grid">
       <div class="footer-brand">
-        <span class="site-logo site-logo-large"><img alt="Rare Care logo" src="/logo.png" /></span>
+        <span class="site-logo site-logo-large"
+          ><img [attr.alt]="dictionary.siteName + ' logo'" src="/logo.png"
+        /></span>
         <div>
           <h2>{{ dictionary.siteName }}</h2>
           <p>{{ dictionary.footer.tagline }}</p>

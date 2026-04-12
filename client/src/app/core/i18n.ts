@@ -22,7 +22,7 @@ export class I18n {
   setLocale(locale: Locale) {
     this.localeSubject.next(locale);
     localStorage.setItem(storageKey, locale);
-    document.documentElement.lang = locale;
+    this.syncDocument(locale);
   }
 
   toggleLocale() {
@@ -32,12 +32,17 @@ export class I18n {
   private initialLocale(): Locale {
     const stored = localStorage.getItem(storageKey);
     if (stored === 'mn' || stored === 'en') {
-      document.documentElement.lang = stored;
+      this.syncDocument(stored);
       return stored;
     }
 
     const browserLocale = normalizeLocale(navigator.language?.slice(0, 2));
-    document.documentElement.lang = browserLocale;
+    this.syncDocument(browserLocale);
     return browserLocale;
+  }
+
+  private syncDocument(locale: Locale) {
+    document.documentElement.lang = locale;
+    document.title = dictionaryFor(locale).siteName;
   }
 }

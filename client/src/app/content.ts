@@ -4,7 +4,7 @@ export type Dictionary = typeof dictionaries.mn;
 
 export const dictionaries = {
   mn: {
-    siteName: 'Rare Care',
+    siteName: 'Ховорхон',
     languageLabel: 'MN',
     alternateLanguageLabel: 'EN',
     nav: {
