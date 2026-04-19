@@ -260,10 +260,15 @@ button {
 }
 
 .header-utility,
-.header-nav {
+.header-nav,
+.header-main-actions {
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.header-main-actions {
+  margin-left: auto;
 }
 
 .header-utility {
@@ -285,6 +290,7 @@ button {
   padding: 0.55rem 0.85rem;
   border-radius: 999px;
   font-weight: 600;
+  white-space: nowrap;
   transition: background-color 160ms ease;
 }
 
@@ -1605,6 +1611,11 @@ button {
 
   .header-search {
     width: 100%;
+  }
+
+  .header-main-actions {
+    flex: 1;
+    min-width: 0;
   }
 
   .mobile-menu-toggle {

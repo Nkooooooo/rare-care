@@ -12,75 +12,231 @@
   @if (disease) {
     <section class="page-hero">
       <div class="container page-hero-inner">
-        <div class="page-hero-copy">
+        <div class="page-hero-copy detail-hero-copy">
+          <div class="detail-pill-row">
+            <div class="pill">{{ primaryCategory(disease) }}</div>
+            @if (disease.source === 'gard') {
+              <div class="source-pill">{{ dictionary.diseases.gardSourceBadge }}</div>
+            }
+          </div>
           <h1>{{ disease.name }}</h1>
-          <p>{{ dictionary.diseases.aliases }}: {{ disease.aliases.join(', ') }}</p>
+          @if (disease.aliases.length) {
+            <p>{{ dictionary.diseases.aliases }}: {{ disease.aliases.join(', ') }}</p>
+          }
+          @if (secondaryCategories(disease).length) {
+            <p class="detail-type-note">
+              <strong>{{ dictionary.diseases.relatedDiseaseTypes }}:</strong>
+              {{ relatedCategorySummary(disease) }}
+            </p>
+          }
+          <div class="detail-hero-note">
+            <p>{{ disease.shortDescription }}</p>
+          </div>
         </div>
       </div>
     </section>
     <section class="container section">
-      <div class="disease-summary-grid">
-        <article class="content-panel">
+      <div class="summary-compare-grid">
+        <article class="content-panel detail-panel detail-panel-primary">
           <h2>{{ dictionary.diseases.medicalSummary }}</h2>
           <p>{{ disease.summaryMedical }}</p>
         </article>
-        <article class="content-panel is-soft">
+        <article class="content-panel is-soft detail-panel">
           <h2>{{ dictionary.diseases.simpleSummary }}</h2>
           <p>{{ disease.summarySimple }}</p>
-          <div class="support-aside">
-            <strong>{{ dictionary.diseases.relatedSupport }}</strong>
-            <p>{{ dictionary.common.educationalDisclaimer }}</p>
-          </div>
         </article>
       </div>
     </section>
-    <section class="container section">
-      <div class="section-heading">
-        <h2>{{ dictionary.diseases.causes }}</h2>
-        <p>{{ disease.shortDescription }}</p>
+    <section class="container section detail-glance-section">
+      <div class="section-heading detail-heading">
+        <h2>{{ dictionary.diseases.atAGlance }}</h2>
       </div>
-      <div class="cause-grid">
-        @for (cause of disease.causes; track cause.title) {
-          <article class="cause-card">
-            <div class="cause-visual" aria-hidden="true"></div>
-            <h3>{{ cause.title }}</h3>
-            <p>{{ cause.description }}</p>
-          </article>
-        }
-      </div>
-    </section>
-    <section class="section section-dark">
-      <div class="container">
-        <div class="section-heading light">
-          <h2>{{ dictionary.diseases.symptoms }}</h2>
-          <p>{{ dictionary.common.educationalDisclaimer }}</p>
-        </div>
-        <div class="symptoms-table-wrapper">
-          <table class="symptoms-table">
-            <thead>
-              <tr>
-                <th>{{ dictionary.diseases.symptomMedicalTerm }}</th>
-                <th>{{ dictionary.diseases.symptomDescription }}</th>
-                <th>{{ dictionary.diseases.symptomSynonyms }}</th>
-                <th>{{ dictionary.diseases.symptomFrequency }}</th>
-                <th>{{ dictionary.diseases.symptomSystem }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (symptom of disease.symptoms; track symptom.medicalTerm) {
-                <tr>
-                  <td>{{ symptom.medicalTerm }}</td>
-                  <td>{{ symptom.description }}</td>
-                  <td>{{ symptom.synonyms?.join(', ') || '-' }}</td>
-                  <td>{{ symptom.frequency || '-' }}</td>
-                  <td>{{ symptom.bodySystem || '-' }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+      <div class="glance-grid">
+        <article class="glance-card">
+          <span class="glance-label">{{ dictionary.diseases.causes }}</span>
+          <h3>{{ dictionary.diseases.mainCauseTitle }}</h3>
+          <ul class="glance-points">
+            @for (point of causeQuickPoints(disease); track point) {
+              <li>{{ point }}</li>
+            }
+          </ul>
+        </article>
+        <article class="glance-card">
+          <span class="glance-label">{{ dictionary.diseases.symptoms }}</span>
+          <h3>{{ dictionary.diseases.mainSymptomsTitle }}</h3>
+          <ul class="glance-points">
+            @for (point of symptomQuickPoints(disease); track point) {
+              <li>{{ point }}</li>
+            }
+          </ul>
+        </article>
+        <article class="glance-card">
+          <span class="glance-label">{{ dictionary.diseases.mainDiseaseType }}</span>
+          <h3>{{ primaryCategory(disease) }}</h3>
+          <ul class="glance-points">
+            @for (point of diseaseTypeQuickPoints(disease); track point) {
+              <li>
+                @if ($index === 0 && secondaryCategories(disease).length) {
+                  <strong>{{ dictionary.diseases.relatedDiseaseTypes }}:</strong> {{ point }}
+                } @else {
+                  {{ point }}
+                }
+              </li>
+            }
+          </ul>
+        </article>
       </div>
     </section>
+    @if (disease.causes.length) {
+      <section class="container section">
+        <div class="section-heading detail-heading">
+          <h2>{{ dictionary.diseases.causes }}</h2>
+        </div>
+        <article class="cause-summary-card content-panel">
+          <h3>{{ dictionary.diseases.mainCausesTitle }}</h3>
+          <ul class="cause-points">
+            @for (point of causeSectionPoints(disease); track point) {
+              <li>{{ point }}</li>
+            }
+          </ul>
+        </article>
+      </section>
+    } @else {
+      <section class="container section">
+        <div class="content-panel is-soft">
+          <h2>{{ dictionary.diseases.causes }}</h2>
+          <p>{{ dictionary.diseases.noCauseDetails }}</p>
+        </div>
+      </section>
+    }
+    @if (disease.symptoms.length) {
+      <section class="section section-dark">
+        <div class="container">
+          <div class="section-heading light detail-heading">
+            <h2>{{ dictionary.diseases.symptoms }}</h2>
+            <p>{{ dictionary.common.educationalDisclaimer }}</p>
+          </div>
+          <div class="symptom-workspace">
+            <div class="symptom-toolbar">
+              <div class="symptom-search-shell">
+                <label class="sr-only" for="symptom-search">{{
+                  dictionary.diseases.symptomSearchLabel
+                }}</label>
+                <input
+                  id="symptom-search"
+                  name="symptomSearch"
+                  type="search"
+                  [(ngModel)]="symptomQuery"
+                  [placeholder]="dictionary.diseases.symptomSearchPlaceholder"
+                />
+              </div>
+              <p class="symptom-result-count">{{ visibleSymptomCount(disease) }}</p>
+            </div>
+
+            <div class="symptom-filter-panel">
+              <p class="symptom-filter-label">{{ dictionary.diseases.symptomFiltersLabel }}</p>
+              <div class="symptom-filter-chips">
+                <button
+                  class="symptom-filter-chip"
+                  type="button"
+                  [class.is-active]="symptomSystem === 'all'"
+                  (click)="selectSymptomSystem('all')"
+                >
+                  {{ dictionary.diseases.allSystems }}
+                </button>
+                @for (system of symptomSystems(disease); track system) {
+                  <button
+                    class="symptom-filter-chip"
+                    type="button"
+                    [class.is-active]="symptomSystem === system"
+                    (click)="selectSymptomSystem(system)"
+                  >
+                    {{ system }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            @if (groupedVisibleSymptoms(disease).length) {
+              <div class="symptom-groups">
+                @for (group of groupedVisibleSymptoms(disease); track group.name) {
+                  <section class="symptom-group">
+                    <div class="symptom-group-head">
+                      <div class="symptom-group-copy">
+                        <p class="symptom-group-label">{{ dictionary.diseases.symptomSystem }}</p>
+                        <h3>{{ group.name }}</h3>
+                      </div>
+                      <span class="symptom-group-count">{{ group.items.length }}</span>
+                    </div>
+
+                    <div class="symptom-card-list">
+                      @for (symptom of group.items; track symptom.medicalTerm) {
+                        <article class="symptom-card">
+                          <div class="symptom-card-top">
+                            <div class="symptom-title-group">
+                              <h4>{{ symptom.medicalTerm }}</h4>
+                              <p>{{ symptomLead(symptom) }}</p>
+                            </div>
+                            @if (symptom.frequency) {
+                              <span class="symptom-frequency-pill">{{ symptom.frequency }}</span>
+                            }
+                          </div>
+
+                          @if (hasSymptomDetails(symptom)) {
+                            <details class="symptom-details-shell">
+                              <summary>{{ dictionary.diseases.symptomDetailsLabel }}</summary>
+                              <div class="symptom-details-body">
+                                @if (symptomExtraDetail(symptom)) {
+                                  <p>{{ symptomExtraDetail(symptom) }}</p>
+                                }
+                                @if (symptom.synonyms?.length) {
+                                  <div class="symptom-detail-block">
+                                    <span>{{ dictionary.diseases.symptomSynonyms }}</span>
+                                    <strong>{{ symptom.synonyms?.join(', ') }}</strong>
+                                  </div>
+                                }
+                              </div>
+                            </details>
+                          }
+                        </article>
+                      }
+                    </div>
+                  </section>
+                }
+              </div>
+            } @else {
+              <div class="content-panel is-soft on-dark symptom-empty-state">
+                <h2>{{ dictionary.diseases.symptoms }}</h2>
+                <p>{{ dictionary.diseases.noFilteredSymptoms }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+    } @else {
+      <section class="section section-dark">
+        <div class="container">
+          <div class="content-panel is-soft on-dark">
+            <h2>{{ dictionary.diseases.symptoms }}</h2>
+            <p>{{ dictionary.diseases.noSymptomDetails }}</p>
+          </div>
+        </div>
+      </section>
+    }
+    @if (disease.references?.length) {
+      <section class="container section">
+        <div class="content-panel detail-panel">
+          <h2>{{ dictionary.diseases.references }}</h2>
+          <div class="reference-list">
+            @for (reference of disease.references || []; track reference.url) {
+              <a [href]="reference.url" target="_blank" rel="noreferrer">
+                {{ reference.title }}
+              </a>
+            }
+          </div>
+        </div>
+      </section>
+    }
     <section class="container section">
       <div class="detail-footer-bar">
         <p>{{ dictionary.diseases.updated }}: {{ formatDate(disease.updatedAt) }}</p>

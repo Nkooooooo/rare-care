@@ -11,7 +11,7 @@
         >
       </a>
       <nav class="header-utility" aria-label="Top utility navigation">
-        @for (item of navTargets.slice(0, 4); track item.key) {
+        @for (item of navTargets.slice(0, 3); track item.key) {
           <a [routerLink]="route(item.path)">{{ item.label() }}</a>
         }
         <div class="header-toggles" role="group" aria-label="Display preferences">
@@ -80,25 +80,27 @@
       </nav>
     </div>
     <div class="container header-main">
-      <nav class="header-nav" aria-label="Primary">
-        @for (item of navTargets.slice(4); track item.key) {
-          <a [routerLink]="route(item.path)" routerLinkActive="is-active">{{ item.label() }}</a>
-        }
-        <a class="donate-link" [routerLink]="route('/donation')" routerLinkActive="is-active">{{
-          dictionary.nav.donate
-        }}</a>
-      </nav>
-      <form class="header-search" role="search" (ngSubmit)="submitSearch()">
-        <label class="sr-only" for="header-search">{{ dictionary.common.search }}</label>
-        <input
-          id="header-search"
-          name="query"
-          type="search"
-          [(ngModel)]="searchQuery"
-          [placeholder]="dictionary.nav.searchPlaceholder"
-        />
-        <button [attr.aria-label]="dictionary.common.search" type="submit">⌕</button>
-      </form>
+      <div class="header-main-actions">
+        <nav class="header-nav" aria-label="Primary">
+          @for (item of navTargets.slice(3); track item.key) {
+            <a [routerLink]="route(item.path)" routerLinkActive="is-active">{{ item.label() }}</a>
+          }
+          <a class="donate-link" [routerLink]="route('/donation')" routerLinkActive="is-active">{{
+            dictionary.nav.donate
+          }}</a>
+        </nav>
+        <form class="header-search" role="search" (ngSubmit)="submitSearch()">
+          <label class="sr-only" for="header-search">{{ dictionary.common.search }}</label>
+          <input
+            id="header-search"
+            name="query"
+            type="search"
+            [(ngModel)]="searchQuery"
+            [placeholder]="dictionary.nav.searchPlaceholder"
+          />
+          <button [attr.aria-label]="dictionary.common.search" type="submit">⌕</button>
+        </form>
+      </div>
       <button
         class="mobile-menu-toggle"
         type="button"

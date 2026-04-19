@@ -74,6 +74,68 @@ export class Events implements OnInit, OnDestroy {
     return formatDisplayDate(value, this.locale);
   }
 
+  posterTheme(event: EventItem) {
+    switch (event.image) {
+      case 'webinar':
+        return this.dictionary.events.posterWebinar;
+      case 'fundraiser':
+        return this.dictionary.events.posterFundraiser;
+      default:
+        return this.dictionary.events.posterForum;
+    }
+  }
+
+  posterImage(event: EventItem) {
+    switch (event.image) {
+      case 'webinar':
+        return '/event-posters/webinar-reference.png';
+      case 'fundraiser':
+        return '/event-posters/fundraiser-reference.png';
+      default:
+        return '/event-posters/community-house.png';
+    }
+  }
+
+  posterBackdropImage(event: EventItem) {
+    return '';
+  }
+
+  posterImageAlt(event: EventItem) {
+    switch (event.image) {
+      case 'webinar':
+        return `${event.title} question and answer illustration`;
+      case 'fundraiser':
+        return `${event.title} donation support illustration`;
+      default:
+        return `${event.title} community illustration`;
+    }
+  }
+
+  posterTime(event: EventItem) {
+    if (!event.startTime && !event.endTime) {
+      return '';
+    }
+
+    return `${event.startTime || ''}${event.endTime ? ' - ' + event.endTime : ''}`.trim();
+  }
+
+  posterDateDay(event: EventItem) {
+    return new Intl.DateTimeFormat(this.locale === 'mn' ? 'mn-MN' : 'en-US', {
+      day: '2-digit',
+      timeZone: 'UTC',
+    }).format(new Date(`${event.date}T00:00:00Z`));
+  }
+
+  posterDateMonth(event: EventItem) {
+    return new Intl.DateTimeFormat(this.locale === 'mn' ? 'mn-MN' : 'en-US', {
+      month: 'short',
+      timeZone: 'UTC',
+    })
+      .format(new Date(`${event.date}T00:00:00Z`))
+      .replace('.', '')
+      .toUpperCase();
+  }
+
   isRegistering(eventId: string) {
     return this.activeEventId === eventId;
   }

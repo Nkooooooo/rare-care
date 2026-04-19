@@ -611,21 +611,6 @@
       "link": "#",
       "locale": "en",
       "published": true
-    },
-    {
-      "id": "event-dinner-mn-151501f4",
-      "title": "Dinner",
-      "summary": "Nomin altai 2 dinner idne",
-      "description": "dinner dinner dinner",
-      "date": "2026-04-09",
-      "startTime": "19:30",
-      "endTime": "20:00",
-      "organizer": "Nomin Altai",
-      "location": "Ger",
-      "image": "",
-      "link": "",
-      "locale": "mn",
-      "published": true
     }
   ],
   "eventRegistrations": [
@@ -678,10 +663,10 @@
   ],
   "authSessions": [
     {
-      "id": "session-62daa01d-bc4b-4925-a5be-86a305b89d31",
+      "id": "session-5b461458-3987-41ca-86b3-1e602c4a1a74",
       "userId": "user-4285dd9e-ff7b-4dac-85c2-ade39caf34bd",
-      "token": "c4af12fbea0e920cddc531cf764a0369b7a7c3c90e348eb4ad817deace56b0d2",
-      "createdAt": "2026-04-09T10:02:10.526Z"
+      "token": "6cf3d2d79f6520d6919e4a0e83e0b2a9a83fbec3300a04b9901ee036b39c912f",
+      "createdAt": "2026-04-16T06:25:00.185Z"
     }
   ]
 }

@@ -8,6 +8,7 @@
     "server": "node server/index.js",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "client": "npm --prefix client start",
+    "refresh:gard": "node scripts/generate-gard-index.mjs",
     "build": "npm --prefix client run build -- --progress=false",
     "start": "node server/index.js"
   },

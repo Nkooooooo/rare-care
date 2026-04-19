@@ -12,6 +12,7 @@ import {
   AuthUser,
   ContactForm,
   DailyCornerEntry,
+  DiseaseBrowseResponse,
   Disease,
   DonationForm,
   EventItem,
@@ -26,19 +27,24 @@ import {
 export class Api {
   private readonly http = inject(HttpClient);
 
-  getDiseases(locale: Locale, filters: { query?: string; category?: string; sort?: string } = {}) {
+  getDiseases(
+    locale: Locale,
+    filters: { query?: string; category?: string; letter?: string; sort?: string; page?: number } = {},
+  ) {
     let params = new HttpParams().set('locale', locale);
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) {
-        params = params.set(key, value);
+      if (value !== undefined && value !== null && value !== '') {
+        params = params.set(key, String(value));
       }
     });
 
-    return this.http.get<Disease[]>('/api/diseases', { params });
+    return this.http.get<DiseaseBrowseResponse>('/api/diseases', { params });
   }
 
   getDiseaseCategories(locale: Locale) {
-    return this.http.get<string[]>('/api/diseases/categories', { params: { locale } });
+    return this.http.get<{ categories: DiseaseBrowseResponse['categories'] }>('/api/diseases/categories', {
+      params: { locale },
+    });
   }
 
   getDisease(locale: Locale, slug: string) {

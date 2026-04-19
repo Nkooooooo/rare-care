@@ -11,64 +11,173 @@
       <div class="page-hero-copy">
         <h1>{{ dictionary.diseases.listingTitle }}</h1>
         <p>{{ dictionary.diseases.listingBody }}</p>
+        <p class="hero-meta">
+          {{ dictionary.diseases.gardReference }}
+        </p>
       </div>
     </div>
   </section>
 
-  <section class="container section">
-    <form class="filter-panel" (ngSubmit)="search()">
-      <div class="field-group">
-        <label for="query">{{ dictionary.diseases.searchLabel }}</label
-        ><input
-          id="query"
-          name="query"
-          type="search"
-          [(ngModel)]="query"
-          [placeholder]="dictionary.nav.searchPlaceholder"
-        />
-      </div>
-      <div class="field-group">
-        <label for="category">{{ dictionary.diseases.categoryLabel }}</label
-        ><select id="category" name="category" [(ngModel)]="category">
-          <option value="all">{{ dictionary.common.allCategories }}</option>
-          @for (item of categories; track item) {
-            <option [value]="item">{{ item }}</option>
+  <section class="container section disease-library-section">
+    <div class="library-layout">
+      <aside class="library-sidebar">
+        <form class="keyword-panel" (ngSubmit)="search()">
+          <p class="sidebar-label">{{ dictionary.diseases.keywordLabel }}</p>
+          <label class="sr-only" for="query">{{ dictionary.diseases.searchLabel }}</label>
+          <div class="search-shell">
+            <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M10.5 4.5a6 6 0 1 0 0 12a6 6 0 0 0 0-12zm0-2a8 8 0 1 1 4.96 14.28l5.13 5.14l-1.42 1.41l-5.14-5.13A8 8 0 0 1 10.5 2.5z"
+              />
+            </svg>
+            <input
+              id="query"
+              name="query"
+              type="search"
+              [ngModel]="query"
+              (ngModelChange)="handleQueryChange($event)"
+              [placeholder]="dictionary.diseases.searchPlaceholder"
+            />
+          </div>
+        </form>
+
+        <div class="sidebar-filter-head">
+          <p class="sidebar-label">{{ dictionary.diseases.filterLabel }}</p>
+          @if (hasActiveFilters()) {
+            <button class="clear-filters" type="button" (click)="reset()">
+              {{ dictionary.common.reset }}
+            </button>
           }
-        </select>
-      </div>
-      <div class="field-group">
-        <label for="sort">{{ dictionary.diseases.sortLabel }}</label
-        ><select id="sort" name="sort" [(ngModel)]="sort">
-          <option value="name">{{ dictionary.diseases.sortName }}</option>
-          <option value="updated">{{ dictionary.diseases.sortUpdated }}</option>
-        </select>
-      </div>
-      <div class="filter-actions">
-        <button class="primary-button" type="submit">{{ dictionary.common.search }}</button
-        ><button class="secondary-button" type="button" (click)="reset()">
-          {{ dictionary.common.reset }}
-        </button>
-      </div>
-    </form>
-    <p class="disclaimer-note">{{ dictionary.common.educationalDisclaimer }}</p>
-    @if (diseases.length) {
-      <div class="disease-grid">
-        @for (disease of diseases; track disease.id) {
-          <article class="disease-card">
-            <div class="pill">{{ disease.category }}</div>
-            <h3>{{ disease.name }}</h3>
-            <p class="aliases">
-              <strong>{{ dictionary.diseases.aliases }}:</strong> {{ disease.aliases.join(', ') }}
-            </p>
-            <p>{{ disease.shortDescription }}</p>
-            <a [routerLink]="routeTo('/disease-information/' + disease.slug)">{{
-              dictionary.common.learnMore
-            }}</a>
-          </article>
+        </div>
+
+        <section class="filter-panel-card">
+          <div class="filter-panel-head">
+            <div>
+              <h2>{{ dictionary.diseases.browseByLetter }}</h2>
+              <p>{{ dictionary.diseases.browseByLetterBody }}</p>
+            </div>
+            <span class="panel-chevron" aria-hidden="true"></span>
+          </div>
+          <div class="letter-grid">
+            @for (item of letterOptions(); track item.name) {
+              <button
+                class="letter-box"
+                type="button"
+                [class.is-active]="isLetterActive(item.name)"
+                [disabled]="item.count === 0"
+                (click)="selectLetter(item.name)"
+              >
+                {{ item.name }}
+              </button>
+            }
+          </div>
+        </section>
+
+        <section class="filter-panel-card">
+          <div class="filter-panel-head">
+            <div>
+              <h2>{{ dictionary.diseases.browseByCategory }}</h2>
+              <p>{{ dictionary.diseases.browseByCategoryBody }}</p>
+            </div>
+            <span class="panel-chevron" aria-hidden="true"></span>
+          </div>
+          <div class="category-list">
+            @for (item of categories; track item.name) {
+              <button
+                class="category-row"
+                type="button"
+                [class.is-active]="isCategoryActive(item.name)"
+                (click)="selectCategory(item.name)"
+              >
+                <span class="category-checkbox" aria-hidden="true"></span>
+                <span class="category-name">{{ item.name }}</span>
+                <span class="category-count">{{ item.count }}</span>
+              </button>
+            }
+          </div>
+        </section>
+      </aside>
+
+      <div class="library-main">
+        <div class="results-bar">
+          <p class="results-count">{{ resultsRangeSummary() }}</p>
+          <div class="sort-pill">
+            <label class="sr-only" for="sort">{{ dictionary.diseases.sortLabel }}</label>
+            <span>{{ dictionary.diseases.sortByPrefix }}:</span>
+            <select id="sort" name="sort" [(ngModel)]="sort" (change)="search()">
+              <option value="name">{{ dictionary.diseases.sortName }}</option>
+              <option value="updated">{{ dictionary.diseases.sortUpdated }}</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="disclaimer-note">{{ dictionary.common.educationalDisclaimer }}</p>
+
+        @if (diseases.length) {
+          <div class="result-stack">
+            @for (disease of diseases; track disease.id) {
+              <article class="library-card">
+                <div class="library-card-body">
+                  <div class="library-card-topline">
+                    <div class="category-copy">
+                      <p class="category-preview">{{ displayCategory(disease) }}</p>
+                      @if (additionalCategoryCount(disease)) {
+                        <p class="category-secondary">{{ additionalCategoryLabel(disease) }}</p>
+                      }
+                    </div>
+                    @if (disease.source === 'gard') {
+                      <div class="source-pill">{{ dictionary.diseases.gardSourceBadge }}</div>
+                    }
+                  </div>
+                  <h3>{{ disease.name }}</h3>
+                  @if (disease.aliases.length) {
+                    <p class="library-card-aliases">
+                      <strong>{{ dictionary.diseases.aliases }}:</strong> {{ disease.aliases.join(', ') }}
+                    </p>
+                  }
+                  <p class="library-card-summary">{{ disease.shortDescription }}</p>
+                </div>
+                <a class="library-card-footer" [routerLink]="routeTo('/disease-information/' + disease.slug)">
+                  <span>{{ dictionary.common.learnMore }}</span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 12h13m-4.5-4.5L17 12l-4.5 4.5" />
+                  </svg>
+                </a>
+              </article>
+            }
+          </div>
+
+          @if (pageCount > 1) {
+            <nav class="pagination-bar" [attr.aria-label]="dictionary.diseases.paginationLabel">
+              <button class="secondary-button" type="button" [disabled]="page === 1" (click)="goToPage(page - 1)">
+                {{ dictionary.diseases.previousPage }}
+              </button>
+              <div class="page-pills">
+                @for (item of pageWindow(); track item) {
+                  <button
+                    class="page-pill"
+                    type="button"
+                    [class.is-active]="item === page"
+                    (click)="goToPage(item)"
+                  >
+                    {{ item }}
+                  </button>
+                }
+              </div>
+              <button
+                class="secondary-button"
+                type="button"
+                [disabled]="page === pageCount"
+                (click)="goToPage(page + 1)"
+              >
+                {{ dictionary.diseases.nextPage }}
+              </button>
+            </nav>
+          }
+        } @else {
+          <div class="empty-state">{{ dictionary.common.noResults }}</div>
         }
       </div>
-    } @else {
-      <div class="empty-state">{{ dictionary.common.noResults }}</div>
-    }
+    </div>
   </section>
 </div>

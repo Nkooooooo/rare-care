@@ -7,6 +7,7 @@ export type Disease = {
   name: string;
   aliases: string[];
   category: string;
+  categories?: string[];
   shortDescription: string;
   summaryMedical: string;
   summarySimple: string;
@@ -19,9 +20,32 @@ export type Disease = {
     bodySystem?: string;
   }[];
   references?: { title: string; url: string }[];
+  source?: 'rare-care' | 'gard';
   locale: Locale;
   published: boolean;
   updatedAt: string;
+};
+
+export type DiseaseListItem = Pick<
+  Disease,
+  'id' | 'slug' | 'name' | 'aliases' | 'category' | 'categories' | 'shortDescription' | 'source' | 'updatedAt'
+> & {
+  locale: Locale;
+};
+
+export type DiseaseFacet = {
+  name: string;
+  count: number;
+};
+
+export type DiseaseBrowseResponse = {
+  items: DiseaseListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  pageCount: number;
+  categories: DiseaseFacet[];
+  letters: DiseaseFacet[];
 };
 
 export type DailyCornerEntry = {

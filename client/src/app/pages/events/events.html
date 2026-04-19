@@ -29,10 +29,75 @@
     } @else {
       @for (event of events; track event.id) {
         <article class="event-card tone-{{ event.image || 'forum' }}">
-          <div class="event-poster" aria-hidden="true">
-            <span>{{
-              event.image === 'fundraiser' ? dictionary.nav.donate : dictionary.siteName
-            }}</span>
+          <div class="event-poster">
+            <div class="event-poster-topbar">
+              <div class="event-poster-brand">
+                <img [attr.alt]="dictionary.siteName + ' logo'" src="/logo.png" />
+                <span>{{ dictionary.events.posterBrand }}</span>
+              </div>
+              <div class="event-poster-date-block">
+                <div class="event-poster-date-badge">
+                  <strong>{{ posterDateDay(event) }}</strong>
+                  <span>{{ posterDateMonth(event) }}</span>
+                </div>
+                <p class="event-poster-kicker">{{ posterTheme(event) }}</p>
+              </div>
+            </div>
+
+            <div class="event-poster-body">
+              <div class="event-poster-copy">
+                <h2>{{ event.title }}</h2>
+                <p class="event-poster-summary">{{ event.summary }}</p>
+              </div>
+
+              <div class="event-poster-visual">
+                @if (posterBackdropImage(event)) {
+                  <img
+                    class="event-poster-backdrop"
+                    [src]="posterBackdropImage(event)"
+                    alt=""
+                    aria-hidden="true"
+                  />
+                }
+                <div class="poster-portrait-frame">
+                  <img
+                    class="event-poster-illustration"
+                    [src]="posterImage(event)"
+                    [attr.alt]="posterImageAlt(event)"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="event-poster-meta">
+              @if (posterTime(event)) {
+                <div class="event-poster-meta-item">
+                  <span class="event-poster-meta-icon event-poster-meta-icon-time" aria-hidden="true"></span>
+                  <div class="event-poster-meta-copy">
+                    <span>{{ dictionary.events.posterTime }}</span>
+                    <strong>{{ posterTime(event) }}</strong>
+                  </div>
+                </div>
+              }
+              @if (event.location) {
+                <div class="event-poster-meta-item">
+                  <span class="event-poster-meta-icon event-poster-meta-icon-place" aria-hidden="true"></span>
+                  <div class="event-poster-meta-copy">
+                    <span>{{ dictionary.events.posterPlace }}</span>
+                    <strong>{{ event.location }}</strong>
+                  </div>
+                </div>
+              }
+              @if (event.organizer) {
+                <div class="event-poster-meta-item">
+                  <span class="event-poster-meta-icon event-poster-meta-icon-organizer" aria-hidden="true"></span>
+                  <div class="event-poster-meta-copy">
+                    <span>{{ dictionary.events.organizer }}</span>
+                    <strong>{{ event.organizer }}</strong>
+                  </div>
+                </div>
+              }
+            </div>
           </div>
           <div class="event-content">
             <h3>{{ event.title }}</h3>
